@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -50,7 +51,7 @@ func runInit(cmd *cobra.Command, name string) error {
 	if err != nil {
 		return err
 	}
-	backupDir := config.DataDir() + "/backups"
+	backupDir := filepath.Join(config.DataDir(), "backups")
 
 	fmt.Fprintf(c.stdout, "Shell:   %s\n", kind)
 	fmt.Fprintf(c.stdout, "File:    %s\n", path)
@@ -111,7 +112,7 @@ func runUninstallShell(cmd *cobra.Command, name string) error {
 	if err != nil {
 		return err
 	}
-	backupDir := config.DataDir() + "/backups"
+	backupDir := filepath.Join(config.DataDir(), "backups")
 
 	ok, err := c.confirm(fmt.Sprintf("Remove the stick block from %s?", path), uninstallFlags.yes)
 	if err != nil {
