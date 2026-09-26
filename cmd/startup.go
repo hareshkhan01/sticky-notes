@@ -10,6 +10,10 @@ import (
 	"github.com/hareshkhan01/sticky-notes/internal/ui"
 )
 
+var startupFlags struct {
+	limit int
+}
+
 // newStartupCmd builds `stick startup`, intended for shell startup hooks.
 func newStartupCmd() *cobra.Command {
 	c := &cobra.Command{
@@ -21,7 +25,7 @@ func newStartupCmd() *cobra.Command {
 			return runStartup(cmd)
 		},
 	}
-	c.Flags().IntVarP(&listFlags.limit, "limit", "n", 0, "override the configured note limit")
+	c.Flags().IntVarP(&startupFlags.limit, "limit", "n", 0, "override the configured note limit")
 	return c
 }
 
@@ -45,7 +49,7 @@ func runStartup(cmd *cobra.Command) error {
 	}
 	limit := cfg.Startup.Limit
 	if cmd.Flags().Changed("limit") {
-		limit = listFlags.limit
+		limit = startupFlags.limit
 	}
 
 	if err := c.open(); err != nil {
