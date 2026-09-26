@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/hareshkhan01/sticky-notes/internal/config"
 )
 
 // newConfigCmd builds `stick config` and its subcommands.
@@ -72,6 +74,22 @@ func newConfigStartupCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return setStartupEnabled(cmd, false)
 		},
+	}, &cobra.Command{
+		Use:               "pinned_only <on|off>",
+		Short:             "Show only pinned notes at startup",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOnOff,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return setStartupBool(cmd, "pinned_only", args[0], func(c *config.Config, v bool) { c.Startup.PinnedOnly = v })
+		},
+	}, &cobra.Command{
+		Use:               "show_when_empty <on|off>",
+		Short:             "Show a hint when there are no notes",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOnOff,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return setStartupBool(cmd, "show_when_empty", args[0], func(c *config.Config, v bool) { c.Startup.ShowWhenEmpty = v })
+		},
 	})
 	return c
 }
@@ -100,4 +118,32 @@ func onOff(b bool) string {
 		return "on"
 	}
 	return "off"
+}
+
+func setStartupBool(cmd *cobra.Command, name, value string, set func(*config.Config, bool)) error {
+	c := newCLI(cmd.OutOrStdout(), cmd.ErrOrStderr(), cmd.InOrStdin())
+	if err := c.setup(); err != nil {
+		return err
+	}
+	defer c.close()
+
+	var v bool
+	switch value {
+	case "on", "true", "1":
+		v = true
+	case "off", "false", "0":
+		v = false
+	default:
+		return fmt.Errorf("expected on or off, got %q", value)
+	}
+	set(&c.cfg, v)
+	if err := c.cfg.Save(c.cfgPath); err != nil {
+		return err
+	}
+	fmt.Fprintln(c.stdout, c.ui.Theme().Ok.Render("✓ "+name+" "+onOff(v)))
+	return nil
+}
+
+func completeOnOff(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{"on\tenable", "off\tdisable"}, cobra.ShellCompDirectiveNoFileComp
 }

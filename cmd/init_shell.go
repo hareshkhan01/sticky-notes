@@ -15,28 +15,32 @@ var initFlags struct {
 	backup bool
 }
 
-// newInitCmd builds `stick init <shell>`.
+// newInitCmd builds `stick init <shell> [latest]`.
 func newInitCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use:   "init <bash|zsh|fish>",
+		Use:   "init <bash|zsh|fish> [latest]",
 		Short: "Install the terminal-startup hook for a shell",
 		Long: `Install the shell hook that shows your notes when a terminal opens.
 
 Stick appends a clearly marked block to your shell startup file after
 showing you what will change and asking for confirmation. A timestamped
 backup is written to the stick config directory first. Running init twice
-never duplicates the block.`,
-		Args:              cobra.ExactArgs(1),
-		ValidArgsFunction: completeShells,
+never duplicates the block.
+
+Pass "latest" to show only the most recent note at startup:
+  stick init fish latest`,
+		Args:              cobra.RangeArgs(1, 2),
+		ValidArgsFunction: completeInitArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runInit(cmd, args[0])
+			latest := len(args) == 2 && args[1] == "latest"
+			return runInit(cmd, args[0], latest)
 		},
 	}
 	c.Flags().BoolVarP(&initFlags.yes, "yes", "y", false, "skip the confirmation prompt")
 	return c
 }
 
-func runInit(cmd *cobra.Command, name string) error {
+func runInit(cmd *cobra.Command, name string, latest bool) error {
 	c := newCLI(cmd.OutOrStdout(), cmd.ErrOrStderr(), cmd.InOrStdin())
 	if err := c.setup(); err != nil {
 		return err
@@ -56,6 +60,9 @@ func runInit(cmd *cobra.Command, name string) error {
 	fmt.Fprintf(c.stdout, "Shell:   %s\n", kind)
 	fmt.Fprintf(c.stdout, "File:    %s\n", path)
 	fmt.Fprintf(c.stdout, "Block:   %s\n", shell.BeginMarker)
+	if latest {
+		fmt.Fprintf(c.stdout, "Startup: only the latest note\n")
+	}
 	fmt.Fprintf(c.stdout, "Effect:  run 'stick startup' in interactive shells\n\n")
 
 	ok, err := c.confirm(fmt.Sprintf("Append the stick block to %s?", path), initFlags.yes)
@@ -76,6 +83,13 @@ func runInit(cmd *cobra.Command, name string) error {
 		return nil
 	}
 	fmt.Fprintln(c.stdout, c.ui.Theme().Ok.Render("✓ Hook installed."))
+	if latest {
+		c.cfg.Startup.Limit = 1
+		if err := c.cfg.Save(c.cfgPath); err != nil {
+			return err
+		}
+		fmt.Fprintln(c.stdout, c.ui.Theme().Ok.Render("✓ Startup limit set to 1 (latest note only)"))
+	}
 	fmt.Fprintf(c.stdout, "Open a new terminal or run 'source %s' to see your notes.\n", path)
 	return nil
 }
@@ -141,4 +155,15 @@ func completeShells(cmd *cobra.Command, args []string, toComplete string) ([]str
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 	return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveNoFileComp
+}
+
+// completeInitArgs offers shell names for the first arg, "latest" for the second.
+func completeInitArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveNoFileComp
+	}
+	if len(args) == 1 {
+		return []string{"latest\tshow only the latest note at startup"}, cobra.ShellCompDirectiveNoFileComp
+	}
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
