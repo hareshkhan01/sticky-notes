@@ -37,7 +37,7 @@ func Default() Config {
 	return Config{
 		Startup: Startup{
 			Enabled:       true,
-			Limit:         5,
+			Limit:         3,
 			PinnedOnly:    false,
 			ShowWhenEmpty: false,
 		},
@@ -131,7 +131,7 @@ func (c Config) Save(path string) error {
 
 // normalize repairs out-of-range values instead of failing at startup.
 func (c *Config) normalize() {
-	if c.Startup.Limit <= 0 || c.Startup.Limit > 20 {
+	if c.Startup.Limit <= 0 || c.Startup.Limit > 3 {
 		c.Startup.Limit = Default().Startup.Limit
 	}
 	switch strings.ToLower(c.Display.Color) {

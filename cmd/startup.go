@@ -50,6 +50,9 @@ func runStartup(cmd *cobra.Command) error {
 	limit := cfg.Startup.Limit
 	if cmd.Flags().Changed("limit") {
 		limit = startupFlags.limit
+		if limit > 3 {
+			limit = 3
+		}
 	}
 
 	if err := c.open(); err != nil {
