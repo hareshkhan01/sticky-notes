@@ -37,12 +37,6 @@ func runStartup(cmd *cobra.Command) error {
 		return nil
 	}
 
-	// Never render into a pipe or script; startup output is for humans
-	// at an interactive prompt only.
-	if !isInteractiveStdout() {
-		return nil
-	}
-
 	cfg := c.cfg
 	if !cfg.Startup.Enabled {
 		return nil
@@ -53,6 +47,16 @@ func runStartup(cmd *cobra.Command) error {
 		if limit > 3 {
 			limit = 3
 		}
+		c.cfg.Startup.Limit = limit
+		if err := c.cfg.Save(c.cfgPath); err != nil {
+			fmt.Fprintf(c.stderr, "stick: save config: %v\n", err)
+		}
+	}
+
+	// Never render into a pipe or script; startup output is for humans
+	// at an interactive prompt only.
+	if !isInteractiveStdout() {
+		return nil
 	}
 
 	if err := c.open(); err != nil {
