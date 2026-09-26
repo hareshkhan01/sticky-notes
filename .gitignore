@@ -1,0 +1,13 @@
+# Database and local artifacts
+*.db
+*.db-wal
+*.db-shm
+stick
+stick.exe
+
+# Editor and OS noise
+.idea/
+.vscode/
+.commandcode
+*.swp
+.DS_Store
