@@ -81,7 +81,7 @@ func runDoctor(cmd *cobra.Command) error {
 
 	// Startup preference.
 	if !c.cfg.Startup.Enabled {
-		fmt.Fprintf(c.stdout, "%s  startup panel disabled (run 'stick config startup enable')\n", bad)
+		fmt.Fprintf(c.stdout, "%s  startup panel disabled (run 'stick config startup enable')\n", ok)
 	} else {
 		fmt.Fprintf(c.stdout, "%s  startup panel enabled, limit %d\n", ok, c.cfg.Startup.Limit)
 	}

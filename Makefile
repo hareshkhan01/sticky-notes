@@ -5,7 +5,8 @@ MODULE  := $(shell go list -m)
 VERSION := $(shell git describe --tags --always 2>/dev/null || echo dev)
 COMMIT  := $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE    := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-LDFLAGS := -s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)
+# Version variables live in the cmd package (see cmd/root.go).
+LDFLAGS := -s -w -X $(MODULE)/cmd.version=$(VERSION) -X $(MODULE)/cmd.commit=$(COMMIT) -X $(MODULE)/cmd.date=$(DATE)
 
 .PHONY: help build test vet fmt run clean install
 
