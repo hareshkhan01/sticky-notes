@@ -11,3 +11,4 @@ stick.exe
 .commandcode
 *.swp
 .DS_Store
+dist/
