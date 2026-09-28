@@ -8,7 +8,9 @@ Each note is a page holding up to 5 topics, with a 200-character limit per topic
 
 Notes are stored in a local SQLite database. Nothing leaves your machine.
 
-<img width="461" height="300" alt="image" src="https://github.com/user-attachments/assets/25f4d7b7-b5c2-4f24-93a6-b84dfd5eda81" />
+**Demo**
+<img width="2285" height="1165" alt="demo" src="https://github.com/user-attachments/assets/666f2f80-df5e-47b1-9aaf-3c514406e2b6" />
+
 
 ## Features
 
